@@ -1,0 +1,66 @@
+setwd("E:\\Data Visualization\\Data Set\\")
+library(xlsx)
+odi_new=read.csv("odi-batting-analysis.csv")
+library(ggplot2)
+
+#1
+library(dplyr)
+
+top10=odi_new %>% group_by(Ground) %>% count() %>% arrange(-n) %>% head(10)
+top2=odi_new %>% group_by(Ground) %>% summarise(Match=length(unique(MatchDate))) %>% arrange(-Match) %>% head(10)
+p1=ggplot(top2,aes(x=Ground,y=Match)) + geom_bar(stat = "Identity",width = .5)
+
+#remove the grid
+p2=p1+theme_bw()
+
+#to rotate the text on the x-axis
+p3=p2+theme(axis.text.x = element_text(angle = 90))
+
+# arranging the x - axis test
+p4=p3+geom_bar(stat = "Identity",aes(fill=Ground))
+
+# Renaming x-axis and Y-axis and plot name
+p5=p4+labs(subtitle="Top 10 cricket grounds", 
+        y="Number of Matches", x="Ground Name", title="Bar Plot", 
+        caption = "Source: ESPN")
+
+# Adding col and removing x axis
+p6=p5+geom_bar(stat = "Identity", aes(fill = Ground), width = .6)
+
+# Now I don't need the X - Axis text
+p7=p6+theme(axis.text.x=element_blank(), axis.title.x=element_blank(), axis.ticks.x = element_blank())
+
+# Removing ticks from X - axis
+p8 = p7 + theme(axis.ticks.x=element_blank())
+
+## Adjusting the legends
+# Hiding the legend title
+p9 = p8 + theme(legend.title=element_blank())
+
+# Changing the position of legends
+p10 = p9 + theme(legend.position = "bottom")
+
+# Changing the legends size (text Plus blocks)
+p11 = p10 + theme(legend.key.width = unit(.2, "cm"))
+
+# creating the data labels
+p12=p11+geom_text(aes(label = Match), position = position_dodge(width = .9), vjust = -0.25)
+
+# Removing Y - Axis
+p13 = p12 + theme(axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y =element_blank())
+
+# Reducing the size of legends
+p14 = p13 + theme(legend.text = element_text(colour = 'black', size = 8, hjust = 3, vjust = 3, face = 'bold'))
+
+p14 + coord_flip()
+
+# barplot(top10$n)
+
+
+
+
+#2 allign the chart in ascending order
+top1=odi_new %>% group_by(Ground) %>% count() %>% arrange(n) %>% tail(10)
+barplot(top1$n)
+## ggplot(top1,aes(x=Ground,fill=as.factor(n))) + geom_bar(position = "stack")
+ggplot(top2,aes(x=reorder(Ground,-Match),y=Match)) + geom_bar(stat = "Identity",width = .5)
