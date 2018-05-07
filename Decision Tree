@@ -1,0 +1,73 @@
+### Decision Trees with more than one input predictor
+library(tree)
+setwd("E:\\Machine Learning\\rmd files\\")
+advertising=read.csv("Advertising.csv")
+model1=tree(sales~.,data = advertising)
+
+{{plot(model1)
+  text(model1)}}
+  
+TV_uniques=sort(unique(advertising$TV))
+length(TV_uniques)
+TV_uniques[1:10]
+
+## cuts for tv
+cuts_tv=(TV_uniques[1:length(TV_uniques)-1]+TV_uniques[2:length(TV_uniques)])/2
+length(cuts_tv)
+
+##Cuts for radio
+radio_uni=sort(unique(advertising$radio))
+length(radio_uni)
+
+cuts_radio=(radio_uni[1:length(radio_uni)-1]+radio_uni[2:length(radio_uni)])/2
+
+##cuts for Newspaper
+NP_Uni=sort(unique(advertising$newspaper))
+length(NP_Uni)
+cuts_NP=(NP_Uni[1:length(NP_Uni)-1]+NP_Uni[2:length(NP_Uni)])/2
+
+####Method-1
+### Calculation of MSE for each cuts
+library(dplyr)
+tv_cuts_mse=c()
+temp=advertising
+for (cut in cuts_tv) {
+  samples_left=temp %>% filter(TV<cut)
+  samples_right=temp %>% filter(TV>cut)
+  pred_left=mean(samples_left$sales)
+  pred_right=mean(samples_right$sales)
+  temp$pred=ifelse(temp$TV<cut,pred_left,pred_right)
+  curr_mse=sum((temp$sales-temp$pred)^2)/nrow(temp)
+  tv_cuts_mse=c(tv_cuts_mse,curr_mse)
+}
+
+radio_cuts_mse=c()
+temp1=advertising
+for (cut in cuts_radio) {
+  samples_left=temp1 %>% filter(radio<cut)
+  samples_right=temp1 %>% filter(radio>cut)
+  pred_left=mean(samples_left$sales)
+  pred_right=mean(samples_right$sales)
+  temp1$pred=ifelse(temp1$radio<cut,pred_left,pred_right)
+  curr_mse=sum((temp1$sales-temp1$pred)^2)/nrow(temp1)
+  radio_cuts_mse=c(radio_cuts_mse,curr_mse)
+}
+
+NP_cuts_mse=c()
+temp2=advertising
+for (cut in cuts_NP) {
+  samples_left=temp2 %>% filter(newspaper<cut)
+  samples_right=temp2 %>% filter(newspaper>cut)
+  pred_left=mean(samples_left$sales)
+  pred_right=mean(samples_right$sales)
+  temp2$pred=ifelse(temp2$newspaper<cut,pred_left,pred_right)
+  curr_mse=sum((temp2$sales-temp2$pred)^2)/nrow(temp)
+  NP_cuts_mse=c(NP_cuts_mse,curr_mse)
+}
+
+result_TV=data.frame(column=rep("TV",length(cuts_tv)),cut=cuts_tv,mse=tv_cuts_mse)
+result_radio=data.frame(column=rep("radio",length(cuts_radio)),cut=cuts_radio,mse=radio_cuts_mse)
+result_NP=data.frame(column=rep("newspaper",length(cuts_NP)),cut=cuts_NP,mse=NP_cuts_mse)
+result=rbind(result_TV,result_radio,result_NP)
+
+result %>% arrange(mse) %>% head(1)
