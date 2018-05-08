@@ -1,0 +1,80 @@
+```{r}
+############################## Gini Impurities #########################################
+######### Case-1
+HR=read.csv("HR Analytics.csv")
+HR_training=HR[1:(0.7*nrow(HR)),]
+HR_Test=HR[0.7*nrow(HR)+1:nrow(HR),]
+
+left_overtime=HR_training %>% filter(OverTime=="Yes")
+right_overtime=HR_training %>% filter(OverTime=="No")
+
+##No. of attrition as per 0 and 1 in the left hand side
+table(left_overtime$Attrition)
+
+nrow(left_overtime)
+nrow(right_overtime)
+
+##Gini Impurity Calculated for LHS
+1-(96/303)^2-(207/303)^2
+
+##No. of attrition as per 0 and 1 in the right hand side
+table(right_overtime$Attrition)
+
+##Gini Impurity Calculated for RHS
+1-(650/726)^2-(76/726)^2
+
+
+### Overall Gini Impurity
+(303/1029)*0.43+(726/1029)*0.187
+
+
+######### Case-2
+left_female=HR_training %>% filter(Gender == "Female")
+right_male= HR_training %>% filter(Gender == "Male")
+## n(HR_training)
+nrow(right_male)
+table(left_female$Attrition)
+
+##Gini LHS
+GI_Left=1-(364/431)^2-(67/431)^2
+
+##Gini RHS
+table(right_male$Attrition)
+GI_Right=1-(493/598)^2-(105/598)^2
+
+##Final GI
+(431/1029)*0.26+(598/1029)*0.289
+
+
+###############GIni Index for whole data set
+table(HR_training$Attrition)
+
+gi_train=1-(857/nrow(HR_training))^2 - (172/nrow(HR_training))^2
+
+
+
+############ Gini for Marital Status #############################
+library(dplyr)
+Marital_status_unique=unique(HR_training$MaritalStatus)
+
+for (status in Marital_status_unique) {
+  
+  sample_left=HR_training %>% filter(MaritalStatus==status)
+  sample_right=HR_training %>% filter(MaritalStatus!=status)
+  p0_left=nrow(sample_left %>% filter(Attrition==0))/nrow(sample_left)
+  p1_left=nrow(sample_left %>% filter(Attrition==1))/nrow(sample_left)
+  gi_left=1-p0_left^2-p1_left^2
+  
+  p0_right=nrow(sample_right %>% filter(Attrition==0))/nrow(sample_right)
+  p1_right=nrow(sample_right %>% filter(Attrition==1))/nrow(sample_right)
+  gi_right=1-p0_right^2-p1_right^2
+  
+  gi_status=nrow(sample_left)/nrow(HR_training)*gi_left+nrow(sample_right)/nrow(HR_training)*gi_right
+  temp_new=Marital_status_unique[Marital_status_unique!=status]
+  print("left node")
+  print(status)
+  print("right node")
+  print(temp_new)
+  print(gi_status)
+  print("---------------------------")
+}
